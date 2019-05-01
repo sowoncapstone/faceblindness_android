@@ -1,8 +1,10 @@
 package com.sowon.faceblindness_android;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
+import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
-import android.widget.TextView;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -15,11 +17,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        OptionActivity checklistActivity = new OptionActivity();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.add(R.id.fragment_container, checklistActivity).commit();
     }
 
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
+    public void onClick_option(View view){
+        OptionActivity optionActivity = new OptionActivity();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, optionActivity).commit();
+    }
+
     public native String stringFromJNI();
 }
