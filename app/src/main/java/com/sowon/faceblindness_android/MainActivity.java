@@ -1,17 +1,11 @@
 package com.sowon.faceblindness_android;
 
-import android.app.Activity;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
-
-    // Used to load the 'native-lib' library on application startup.
-    static {
-        System.loadLibrary("native-lib");
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +21,24 @@ public class MainActivity extends AppCompatActivity {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, optionActivity).commit();
     }
-
-    public native String stringFromJNI();
+    public void onClick_category(View view){
+        CategoryActivity categoryActivity = new CategoryActivity();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, categoryActivity).commit();
+    }
+    public void onClick_time(View view){
+        TimeActivity timeActivity = new TimeActivity();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, timeActivity).commit();
+    }
+    public void onClick_timeline(View view){
+        TimelineActivity timelineActivity = new TimelineActivity();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, timelineActivity).commit();
+    }
+    public void onClick_search(View view){
+        SearchActivity searchActivity = new SearchActivity();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, searchActivity).commit();
+    }
 }

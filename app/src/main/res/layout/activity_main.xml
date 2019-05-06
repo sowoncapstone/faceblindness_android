@@ -28,6 +28,7 @@
             android:layout_gravity="center"
             android:layout_weight="1"
             android:src="@drawable/time"
+            android:onClick="onClick_time"
             android:background="@android:color/transparent" />
 
         <ImageButton
@@ -37,6 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:src="@drawable/category"
+            android:onClick="onClick_category"
             android:background="@android:color/transparent" />
 
         <ImageButton
@@ -46,6 +48,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:src="@drawable/timeline"
+            android:onClick="onClick_timeline"
             android:background="@android:color/transparent" />
 
         <ImageButton
@@ -55,6 +58,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:src="@drawable/search"
+            android:onClick="onClick_search"
             android:background="@android:color/transparent" />
 
         <ImageButton
@@ -64,6 +68,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:src="@drawable/option"
+            android:onClick="onClick_option"
             android:background="@android:color/transparent" />
     </LinearLayout>
 
