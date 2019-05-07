@@ -14,6 +14,9 @@ public class MainActivity extends AppCompatActivity {
         OptionActivity checklistActivity = new OptionActivity();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(R.id.fragment_container, checklistActivity).commit();
+
+
+
     }
 
     public void onClick_option(View view){
