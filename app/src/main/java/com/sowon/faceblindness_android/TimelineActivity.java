@@ -79,10 +79,8 @@ public class TimelineActivity extends Fragment {
         }
         else {
             Log.d(TAG, "Initialisation successful.");
-
             showPairedDevicesListDialog();
         }
-
         return view;
     }
 
@@ -194,30 +192,18 @@ public class TimelineActivity extends Fragment {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-
             byte [] readBuffer = new byte[1024];
             int readBufferPosition = 0;
-
-
             while (true) {
-
                 if ( isCancelled() ) return false;
-
                 try {
-
                     int bytesAvailable = mInputStream.available();
-
                     if(bytesAvailable > 0) {
-
                         byte[] packetBytes = new byte[bytesAvailable];
-
                         mInputStream.read(packetBytes);
-
                         for(int i=0;i<bytesAvailable;i++) {
-
                             byte b = packetBytes[i];
-                            if(b == '\n')
-                            {
+                            if(b == '\n'){
                                 byte[] encodedBytes = new byte[readBufferPosition];
                                 System.arraycopy(readBuffer, 0, encodedBytes, 0,
                                         encodedBytes.length);
@@ -228,34 +214,27 @@ public class TimelineActivity extends Fragment {
                                 Log.d(TAG, "recv message: " + recvMessage);
                                 publishProgress(recvMessage);
                             }
-                            else
-                            {
+                            else{
                                 readBuffer[readBufferPosition++] = b;
                             }
                         }
                     }
                 } catch (IOException e) {
-
                     Log.e(TAG, "disconnected", e);
                     return false;
                 }
             }
-
         }
 
         @Override
         protected void onProgressUpdate(String... recvMessage) {
-
             mConversationArrayAdapter.insert(mConnectedDeviceName + ": " + recvMessage[0], 0);
         }
 
         @Override
         protected void onPostExecute(Boolean isSucess) {
             super.onPostExecute(isSucess);
-
             if ( !isSucess ) {
-
-
                 closeSocket();
                 Log.d(TAG, "Device connection was lost");
                 isConnectionError = true;
@@ -266,42 +245,32 @@ public class TimelineActivity extends Fragment {
         @Override
         protected void onCancelled(Boolean aBoolean) {
             super.onCancelled(aBoolean);
-
             closeSocket();
         }
 
         void closeSocket(){
-
             try {
-
                 mBluetoothSocket.close();
                 Log.d(TAG, "close socket()");
-
             } catch (IOException e2) {
-
                 Log.e(TAG, "unable to close() " +
                         " socket during connection failure", e2);
             }
         }
 
         void write(String msg){
-
             msg += "\n";
-
             try {
                 mOutputStream.write(msg.getBytes());
                 mOutputStream.flush();
             } catch (IOException e) {
                 Log.e(TAG, "Exception during send", e );
             }
-
             mInputEditText.setText(" ");
         }
     }
 
-
-    public void showPairedDevicesListDialog()
-    {
+    public void showPairedDevicesListDialog(){
         Set<BluetoothDevice> devices = mBluetoothAdapter.getBondedDevices();
         final BluetoothDevice[] pairedDevices = devices.toArray(new BluetoothDevice[0]);
 
@@ -333,9 +302,7 @@ public class TimelineActivity extends Fragment {
     }
 
 
-
-    public void showErrorDialog(String message)
-    {
+    public void showErrorDialog(String message){
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Quit");
         builder.setCancelable(false);
@@ -353,8 +320,7 @@ public class TimelineActivity extends Fragment {
     }
 
 
-    public void showQuitDialog(String message)
-    {
+    public void showQuitDialog(String message){
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Quit");
         builder.setCancelable(false);
@@ -380,7 +346,6 @@ public class TimelineActivity extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
         if(requestCode == REQUEST_BLUETOOTH_ENABLE){
             if (resultCode == RESULT_OK){
                 //BlueTooth is now Enabled
