@@ -3,6 +3,7 @@ package com.sowon.faceblindness_android;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.Set;
 import java.util.UUID;
 
@@ -11,6 +12,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -23,6 +25,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -35,6 +38,7 @@ public class TimelineActivity extends Fragment {
 
     private TextView mConnectionStatus;
     private EditText mInputEditText;
+    private ImageView bmpimage;
 
     ConnectedTask mConnectedTask = null;
     static BluetoothAdapter mBluetoothAdapter;
@@ -59,6 +63,7 @@ public class TimelineActivity extends Fragment {
         mConnectionStatus = (TextView) view.findViewById(R.id.connection_status_textview);
         mInputEditText = (EditText) view.findViewById(R.id.input_string_edittext);
         ListView mMessageListview = (ListView) view.findViewById(R.id.message_listview);
+        bmpimage = (ImageView) view.findViewById(R.id.imageView3);
 
         mConversationArrayAdapter = new ArrayAdapter<>( getActivity(),
                 android.R.layout.simple_list_item_1 );
@@ -203,15 +208,19 @@ public class TimelineActivity extends Fragment {
                         mInputStream.read(packetBytes);
                         for(int i=0;i<bytesAvailable;i++) {
                             byte b = packetBytes[i];
-                            if(b == '\n'){
+                            if(b == '\t' && packetBytes[i+1] == '\n'){
                                 byte[] encodedBytes = new byte[readBufferPosition];
                                 System.arraycopy(readBuffer, 0, encodedBytes, 0,
                                         encodedBytes.length);
+
+                                Bitmap bitmap = Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888);
+                                ByteBuffer buffer = java.nio.ByteBuffer.wrap(encodedBytes);
+                                buffer.rewind();
+                                bitmap.copyPixelsFromBuffer(buffer);
+                                bmpimage.setImageBitmap(bitmap);
+
                                 String recvMessage = new String(encodedBytes, "UTF-8");
-
                                 readBufferPosition = 0;
-
-                                Log.d(TAG, "recv message: " + recvMessage);
                                 publishProgress(recvMessage);
                             }
                             else{
@@ -219,7 +228,7 @@ public class TimelineActivity extends Fragment {
                             }
                         }
                     }
-                } catch (IOException e) {
+                }catch (IOException e) {
                     Log.e(TAG, "disconnected", e);
                     return false;
                 }
