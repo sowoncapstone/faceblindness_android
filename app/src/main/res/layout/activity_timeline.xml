@@ -9,4 +9,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:id="@+id/timeline_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="최근 만난 사람"
+        android:textColor="#000000"
+        android:textSize="24sp" />
 </LinearLayout>

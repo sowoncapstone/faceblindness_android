@@ -10,8 +10,9 @@
         android:id="@+id/dp1"
         android:layout_width="243dp"
         android:layout_height="85dp"
-        android:layout_marginStart="22dp"
-        android:layout_marginLeft="22dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="8dp"
         android:calendarViewShown="false"
         android:datePickerMode="spinner"
         app:layout_constraintStart_toEndOf="@+id/textView3"
@@ -24,9 +25,9 @@
         android:id="@+id/dp2"
         android:layout_width="247dp"
         android:layout_height="81dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="88dp"
         android:calendarViewShown="false"
         android:datePickerMode="spinner"
         app:layout_constraintStart_toEndOf="@+id/textView2"
@@ -39,9 +40,9 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginLeft="48dp"
+        android:layout_marginTop="104dp"
         android:text="From"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
@@ -51,9 +52,9 @@
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="35dp"
-        android:layout_marginLeft="35dp"
-        android:layout_marginTop="55dp"
+        android:layout_marginStart="64dp"
+        android:layout_marginLeft="64dp"
+        android:layout_marginTop="56dp"
         android:text="To"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
@@ -63,9 +64,9 @@
         android:id="@+id/imageView2"
         android:layout_width="41dp"
         android:layout_height="42dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="116dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="192dp"
         app:layout_constraintStart_toEndOf="@+id/dp1"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@android:drawable/ic_menu_search" />
@@ -82,7 +83,35 @@
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.703"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dp1"></LinearLayout>
+        app:layout_constraintTop_toBottomOf="@+id/dp1"
+        app:layout_constraintVertical_bias="1.0"></LinearLayout>
+
+    <TextView
+        android:id="@+id/time_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="시간별로 보기"
+        android:textColor="#000000"
+        android:textSize="24sp"
+        tools:layout_editor_absoluteX="22dp"
+        tools:layout_editor_absoluteY="16dp" />
+
+    <Button
+        android:id="@+id/day_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="요일별"
+        tools:layout_editor_absoluteX="71dp"
+        tools:layout_editor_absoluteY="274dp" />
+
+    <Button
+        android:id="@+id/time_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="시간대별"
+        tools:layout_editor_absoluteX="230dp"
+        tools:layout_editor_absoluteY="273dp" />
 
 </android.support.constraint.ConstraintLayout>

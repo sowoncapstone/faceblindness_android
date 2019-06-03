@@ -11,6 +11,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/menubar">
+        <TextView
+            android:id="@+id/cppTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="" />
     </FrameLayout>
 
     <LinearLayout

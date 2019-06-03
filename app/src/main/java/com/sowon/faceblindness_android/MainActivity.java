@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -13,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +22,11 @@ import java.util.Set;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
+
+    static{
+        System.loadLibrary("native-lib");
+    }
+
     private final int REQUEST_BLUETOOTH_ENABLE = 100;
     ConnectedTask mConnectedTask = null;
     static BluetoothAdapter mBluetoothAdapter;
@@ -27,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
     private ArrayAdapter<String> mConversationArrayAdapter;
     static boolean isConnectionError = false;
     private static final String TAG = "BluetoothClient";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +56,12 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Initialisation successful.");
             showPairedDevicesListDialog();
         }
+
+        TextView tv = (TextView) findViewById(R.id.cppTest);
+        tv.setText(stringFromJNI());
     }
+
+    public native String stringFromJNI();
 
     @Override
     public void onDestroy() {
@@ -137,6 +148,7 @@ public class MainActivity extends AppCompatActivity {
                     if(bytesAvailable > 0) {
                         byte[] packetBytes = new byte[bytesAvailable];
                         mInputStream.read(packetBytes);
+                        Log.d(TAG, "*********************rcv success************************");
                         for(int i=0;i<bytesAvailable;i++) {
                             byte b = packetBytes[i];
                             if(b == '\t' && packetBytes[i+1] == '\n'){
@@ -145,6 +157,11 @@ public class MainActivity extends AppCompatActivity {
                                         encodedBytes.length);
 
                                 String recvMessage = new String(encodedBytes, "UTF-8");
+                                if(recvMessage ==null){
+                                    Log.d(TAG, "********************* SAD, it is null ************************");
+                                }
+                                Log.d(TAG, "********************* "+recvMessage+" ************************");
+
                                 readBufferPosition = 0;
                                 publishProgress(recvMessage);
                             }
@@ -193,6 +210,37 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //서버 접속하는 네트워크 커넥션 만들기
+    public class NetworkTask extends AsyncTask<Void, Void, String> {
+
+        private String url;
+        private ContentValues values;
+
+        public NetworkTask(String url, ContentValues values) {
+
+            this.url = url;
+            this.values = values;
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+
+            String result; // 요청 결과를 저장할 변수.
+            RequestHttpURLConnection requestHttpURLConnection = new RequestHttpURLConnection();
+            result = requestHttpURLConnection.request(url, values); // 해당 URL로 부터 결과물을 얻어온다.
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            //doInBackground()로 부터 리턴된 값이 onPostExecute()의 매개변수로 넘어오므로 s를 출력한다.
+            //결과값 표시
+            //tv_outPut.setText(s);
+        }
+    }
 
     //페어링 된 디바이스 목록 표시하는 다이얼로그
     public void showPairedDevicesListDialog(){

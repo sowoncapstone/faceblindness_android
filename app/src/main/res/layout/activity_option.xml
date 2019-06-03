@@ -7,4 +7,11 @@
     android:layout_marginLeft="8dp"
     android:layout_marginRight="8dp">
 
+    <TextView
+        android:id="@+id/option_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="환경설정"
+        android:textColor="#F8000000"
+        android:textSize="24sp" />
 </RelativeLayout>
