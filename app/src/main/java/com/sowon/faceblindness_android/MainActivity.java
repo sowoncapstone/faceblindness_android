@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
@@ -22,6 +23,8 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -156,125 +159,142 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // 이미지 한 개 담을 스트링
-
-            byte[] readBuffer = new byte[1024];
-            int readBufferPosition = 0;
+            String writeString = "";
+            int count = 0;
             while (true) {
                 if (isCancelled()) return false;
                 try {
-                    int bytesAvailable = mInputStream.available();
-                    if (bytesAvailable > 0) {
-                        byte[] packetBytes = new byte[bytesAvailable];
-                        mInputStream.read(packetBytes);
-                        Log.d(TAG, "*********************rcv success************************");
-                        for (int i = 0; i < bytesAvailable; i++) {
-                            byte b = packetBytes[i];
-                            if (b == '\t' && packetBytes[i + 1] == '\n') {
-                                byte[] encodedBytes = new byte[readBufferPosition];
-                                System.arraycopy(readBuffer, 0, encodedBytes, 0,
-                                        encodedBytes.length);
-                                String recvMessage = new String(encodedBytes, "UTF-8");
-                                // 파일의 끝을 의미하는 바이트 찾을 때까지
-                                // 이미지 계속 추가.
-                                wholeImage += recvMessage;
+                    BufferedReader br = new BufferedReader(new InputStreamReader(mInputStream));
+                    String bufString = br.readLine();
+                    writeString += bufString;
+                    count++;
 
-                                if (recvMessage.contains("ENDOFFILE")) {
-                                    Log.d(TAG, "*********************END OF FILE FOUND************************");
-                                    Log.d(TAG, wholeImage);
+                    if (bufString.contains("ENDOFFILE") || count == 1) {
+                        Log.d("TOTAL", writeString);
+                        HttpURLConnection con = null;
+                        BufferedReader reader = null;
+                        URL url = new URL("http://13.58.98.170:3000/post");
+                        con = (HttpURLConnection) url.openConnection();
 
-                                    try {
-                                        Log.d("json", "*********************Action Start************************");
+                        con.setRequestMethod("POST");//POST방식으로 보냄
+                        con.setRequestProperty("Cache-Control", "no-cache");//캐시 설정
+                        con.setRequestProperty("Content-Type", "application/json");//application JSON 형식으로 전송
+                        con.setRequestProperty("Accept", "text/html");//서버에 response 데이터를 html로 받음
+                        con.setDoOutput(true);//Outstream으로 post 데이터를 넘겨주겠다는 의미
+                        con.setDoInput(true);//Inputstream으로 서버로부터 응답을 받겠다는 의미
+                        con.connect();
 
-                                        //JSONObject를 만들고 key value 형식으로 값을 저장해준다.
-                                        jsonObject = new JSONObject();
+                        OutputStream outStream = con.getOutputStream();
+                        //버퍼를 생성하고 넣음
+                        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outStream));
+                        writer.write(writeString);
+                        writer.flush();
+                        writer.close();//버퍼를 받아줌
+                        Log.d("URL CONNECTION", "*********************SENT************************");
 
+                        //서버로 부터 데이터를 받음
+                        InputStream stream = con.getInputStream();
 
-                                        jsonObject.accumulate("user_id", "soyoung");
-                                        //jsonObject.accumulate("name", "why not working?");
-                                        //Log.d("json", encodings);
+                        reader = new BufferedReader(new InputStreamReader(stream));
 
-                                        jsonObject.accumulate("name", wholeImage);
+                        StringBuffer buffer = new StringBuffer();
 
-                                        Log.d("json", "*********************JSON FILE Created************************");
+                        String line = "";
+                        while ((line = reader.readLine()) != null) {
+                            buffer.append(line);
+                        }
+                        synchronized(this){
+                            this.wait(5000);
+                        }
 
-
-                                        HttpURLConnection con = null;
-                                        BufferedReader reader = null;
-
-                                        try {
-                                            URL url = new URL("http://3.16.82.152:3000/post");
-                                            //URL url = new URL(urls[0]);
-                                            //연결을 함
-                                            con = (HttpURLConnection) url.openConnection();
-
-                                            con.setRequestMethod("POST");//POST방식으로 보냄
-                                            con.setRequestProperty("Cache-Control", "no-cache");//캐시 설정
-                                            con.setRequestProperty("Content-Type", "application/json");//application JSON 형식으로 전송
-                                            con.setRequestProperty("Accept", "text/html");//서버에 response 데이터를 html로 받음
-                                            con.setDoOutput(true);//Outstream으로 post 데이터를 넘겨주겠다는 의미
-                                            con.setDoInput(true);//Inputstream으로 서버로부터 응답을 받겠다는 의미
-                                            con.connect();
-                                            Log.d("URL CONNECTION", "*********************success************************");
-                                            //서버로 보내기위해서 스트림 만듬
-                                            OutputStream outStream = con.getOutputStream();
-                                            //버퍼를 생성하고 넣음
-                                            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outStream));
-                                            writer.write(jsonObject.toString());
-                                            writer.flush();
-                                            writer.close();//버퍼를 받아줌
-                                            Log.d("URL CONNECTION", "*********************SENT************************");
-
-                                            wholeImage = "";
-                                            //서버로 부터 데이터를 받음
-                                            InputStream stream = con.getInputStream();
-
-                                            reader = new BufferedReader(new InputStreamReader(stream));
-
-                                            StringBuffer buffer = new StringBuffer();
-
-                                            String line = "";
-                                            while ((line = reader.readLine()) != null) {
-                                                buffer.append(line);
-                                            }
-
-                                        } catch (MalformedURLException e) {
-                                            e.printStackTrace();
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        } finally {
-                                            if (con != null) {
-                                                con.disconnect();
-                                            }
-                                            try {
-                                                if (reader != null) {
-                                                    reader.close();//버퍼를 닫아줌
-                                                }
-                                            } catch (IOException e) {
-                                                e.printStackTrace();
-                                            }
-                                        }
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-
-
-                                readBufferPosition = 0;
-                                publishProgress(recvMessage);
-                            } else {
-                                readBuffer[readBufferPosition++] = b;
-                            }
+                        if(bufString.contains("ENDOFFILE")){
+                            return true;
+                        }else{
+                            count = 0;
+                            writeString = "";
                         }
                     }
 
-
-                } catch (IOException e) {
-                    Log.e(TAG, "disconnected", e);
-                    return false;
+                }catch (Exception e){
+                    Log.e("ERROR2", e.getMessage());
                 }
             }
+
+
         }
+
+
+//
+//                    if (bufString.contains("ENDOFFILE")) {
+//                        Log.d(TAG, "*********************END OF FILE FOUND************************");
+//                        Log.d("JSON FILE", jsonObject.toString());
+//
+//                        try {
+//                            HttpURLConnection con = null;
+//                            BufferedReader reader = null;
+//
+//                            try {
+//                                URL url = new URL("http://18.217.201.190:3000/post");
+//                                //URL url = new URL(urls[0]);
+//                                //연결을 함
+//                                con = (HttpURLConnection) url.openConnection();
+//
+//                                con.setRequestMethod("POST");//POST방식으로 보냄
+//                                con.setRequestProperty("Cache-Control", "no-cache");//캐시 설정
+//                                con.setRequestProperty("Content-Type", "application/json");//application JSON 형식으로 전송
+//                                con.setRequestProperty("Accept", "text/html");//서버에 response 데이터를 html로 받음
+//                                con.setDoOutput(true);//Outstream으로 post 데이터를 넘겨주겠다는 의미
+//                                con.setDoInput(true);//Inputstream으로 서버로부터 응답을 받겠다는 의미
+//                                con.connect();
+//                                Log.d("URL CONNECTION", "*********************success************************");
+//                                //서버로 보내기위해서 스트림 만듬
+//                                OutputStream outStream = con.getOutputStream();
+//                                //버퍼를 생성하고 넣음
+//                                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outStream));
+//                                writer.write(jsonObject.toString());
+//                                writer.flush();
+//                                writer.close();//버퍼를 받아줌
+//                                Log.d("URL CONNECTION", "*********************SENT************************");
+//
+//                                //서버로 부터 데이터를 받음
+//                                InputStream stream = con.getInputStream();
+//
+//                                reader = new BufferedReader(new InputStreamReader(stream));
+//
+//                                StringBuffer buffer = new StringBuffer();
+//
+//                                String line = "";
+//                                while ((line = reader.readLine()) != null) {
+//                                    buffer.append(line);
+//                                }
+//
+//                            } catch (MalformedURLException e) {
+//                                e.printStackTrace();
+//                            } catch (IOException e) {
+//                                e.printStackTrace();
+//                            } finally {
+//                                if (con != null) {
+//                                    con.disconnect();
+//                                }
+//                                try {
+//                                    if (reader != null) {
+//                                        reader.close();
+//                                    }
+//                                } catch (IOException e) {
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                        return true;
+//                    }
+//                } catch (IOException e) {
+//                    Log.e(TAG, "disconnected", e);
+//                    return false;
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
 
         @Override
         protected void onProgressUpdate(String... recvMessage) {
