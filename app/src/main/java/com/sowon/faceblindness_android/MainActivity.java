@@ -8,33 +8,40 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Environment;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.TextView;
 
-import org.json.JSONException;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,9 +52,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayAdapter<String> mConversationArrayAdapter;
     static boolean isConnectionError = false;
     private String wholeImage = "";
-    private JSONObject jsonObject;
-    private String encodings;
-
+    private Retrofit mRetrofit;
+    private RetrofitAPI mRetrofitAPI;
 
     private static final String TAG = "BluetoothClient";
 
@@ -82,6 +88,12 @@ public class MainActivity extends AppCompatActivity {
             mConnectedTask.cancel(true);
         }
     }
+
+    public interface RetrofitAPI{
+        @POST("post")
+        Call<String>postComment(@Body EncodedImage encodedImage);
+    }
+
 
     //프래그먼트에 전달하는 인터페이스를 위한 메소드
     public String passvalue() {
@@ -160,141 +172,60 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
             String writeString = "";
-            int count = 0;
             while (true) {
                 if (isCancelled()) return false;
                 try {
                     BufferedReader br = new BufferedReader(new InputStreamReader(mInputStream));
                     String bufString = br.readLine();
                     writeString += bufString;
-                    count++;
 
-                    if (bufString.contains("ENDOFFILE") || count == 1) {
-                        Log.d("TOTAL", writeString);
-                        HttpURLConnection con = null;
-                        BufferedReader reader = null;
-                        URL url = new URL("http://13.58.98.170:3000/post");
-                        con = (HttpURLConnection) url.openConnection();
+                    if (bufString.contains("ENDOFFILE")) {
+                        Log.d("Sending Image", writeString);
 
-                        con.setRequestMethod("POST");//POST방식으로 보냄
-                        con.setRequestProperty("Cache-Control", "no-cache");//캐시 설정
-                        con.setRequestProperty("Content-Type", "application/json");//application JSON 형식으로 전송
-                        con.setRequestProperty("Accept", "text/html");//서버에 response 데이터를 html로 받음
-                        con.setDoOutput(true);//Outstream으로 post 데이터를 넘겨주겠다는 의미
-                        con.setDoInput(true);//Inputstream으로 서버로부터 응답을 받겠다는 의미
-                        con.connect();
+                        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+                        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-                        OutputStream outStream = con.getOutputStream();
-                        //버퍼를 생성하고 넣음
-                        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outStream));
-                        writer.write(writeString);
-                        writer.flush();
-                        writer.close();//버퍼를 받아줌
-                        Log.d("URL CONNECTION", "*********************SENT************************");
+                        OkHttpClient client = new OkHttpClient.Builder()
+                                .addInterceptor(interceptor)
+                                .retryOnConnectionFailure(true)
+                                .connectTimeout(15, TimeUnit.SECONDS)
+                                .build();
 
-                        //서버로 부터 데이터를 받음
-                        InputStream stream = con.getInputStream();
+                        Gson gson = new GsonBuilder()
+                                .setLenient()
+                                .create();
 
-                        reader = new BufferedReader(new InputStreamReader(stream));
+                        mRetrofit = new Retrofit.Builder()
+                                .baseUrl("http://13.58.98.170:3000")
+                                .client(client)
+                                .addConverterFactory(GsonConverterFactory.create(gson))
+                                .build();
+                        mRetrofitAPI = mRetrofit.create(RetrofitAPI.class);
 
-                        StringBuffer buffer = new StringBuffer();
+                        EncodedImage ei = new EncodedImage(writeString);
+                        Call<String> comment = mRetrofitAPI.postComment(ei);
+                        comment.enqueue(new Callback<String>() {
+                            @Override
+                            public void onResponse(Call<String> call, Response<String> response) {
+                                String result = response.body();
+                                Log.d(TAG, result);
+                            }
 
-                        String line = "";
-                        while ((line = reader.readLine()) != null) {
-                            buffer.append(line);
-                        }
-                        synchronized(this){
-                            this.wait(5000);
-                        }
+                            @Override
+                            public void onFailure(Call<String> call, Throwable t) {
+                                t.printStackTrace();
+                            }
+                        });
 
-                        if(bufString.contains("ENDOFFILE")){
-                            return true;
-                        }else{
-                            count = 0;
-                            writeString = "";
-                        }
+                        writeString = "";
                     }
 
                 }catch (Exception e){
                     Log.e("ERROR2", e.getMessage());
                 }
             }
-
-
         }
 
-
-//
-//                    if (bufString.contains("ENDOFFILE")) {
-//                        Log.d(TAG, "*********************END OF FILE FOUND************************");
-//                        Log.d("JSON FILE", jsonObject.toString());
-//
-//                        try {
-//                            HttpURLConnection con = null;
-//                            BufferedReader reader = null;
-//
-//                            try {
-//                                URL url = new URL("http://18.217.201.190:3000/post");
-//                                //URL url = new URL(urls[0]);
-//                                //연결을 함
-//                                con = (HttpURLConnection) url.openConnection();
-//
-//                                con.setRequestMethod("POST");//POST방식으로 보냄
-//                                con.setRequestProperty("Cache-Control", "no-cache");//캐시 설정
-//                                con.setRequestProperty("Content-Type", "application/json");//application JSON 형식으로 전송
-//                                con.setRequestProperty("Accept", "text/html");//서버에 response 데이터를 html로 받음
-//                                con.setDoOutput(true);//Outstream으로 post 데이터를 넘겨주겠다는 의미
-//                                con.setDoInput(true);//Inputstream으로 서버로부터 응답을 받겠다는 의미
-//                                con.connect();
-//                                Log.d("URL CONNECTION", "*********************success************************");
-//                                //서버로 보내기위해서 스트림 만듬
-//                                OutputStream outStream = con.getOutputStream();
-//                                //버퍼를 생성하고 넣음
-//                                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outStream));
-//                                writer.write(jsonObject.toString());
-//                                writer.flush();
-//                                writer.close();//버퍼를 받아줌
-//                                Log.d("URL CONNECTION", "*********************SENT************************");
-//
-//                                //서버로 부터 데이터를 받음
-//                                InputStream stream = con.getInputStream();
-//
-//                                reader = new BufferedReader(new InputStreamReader(stream));
-//
-//                                StringBuffer buffer = new StringBuffer();
-//
-//                                String line = "";
-//                                while ((line = reader.readLine()) != null) {
-//                                    buffer.append(line);
-//                                }
-//
-//                            } catch (MalformedURLException e) {
-//                                e.printStackTrace();
-//                            } catch (IOException e) {
-//                                e.printStackTrace();
-//                            } finally {
-//                                if (con != null) {
-//                                    con.disconnect();
-//                                }
-//                                try {
-//                                    if (reader != null) {
-//                                        reader.close();
-//                                    }
-//                                } catch (IOException e) {
-//                                    e.printStackTrace();
-//                                }
-//                            }
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//                        return true;
-//                    }
-//                } catch (IOException e) {
-//                    Log.e(TAG, "disconnected", e);
-//                    return false;
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
 
         @Override
         protected void onProgressUpdate(String... recvMessage) {
@@ -329,37 +260,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //서버 접속하는 네트워크 커넥션 만들기
-    public class NetworkTask extends AsyncTask<Void, Void, String> {
-
-        private String url;
-        private ContentValues values;
-
-        public NetworkTask(String url, ContentValues values) {
-
-            this.url = url;
-            this.values = values;
-        }
-
-        @Override
-        protected String doInBackground(Void... params) {
-
-            String result; // 요청 결과를 저장할 변수.
-            RequestHttpURLConnection requestHttpURLConnection = new RequestHttpURLConnection();
-            result = requestHttpURLConnection.request(url, values); // 해당 URL로 부터 결과물을 얻어온다.
-
-            return result;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-
-            //doInBackground()로 부터 리턴된 값이 onPostExecute()의 매개변수로 넘어오므로 s를 출력한다.
-            //결과값 표시
-            //tv_outPut.setText(s);
-        }
-    }
 
     //페어링 된 디바이스 목록 표시하는 다이얼로그
     public void showPairedDevicesListDialog() {
