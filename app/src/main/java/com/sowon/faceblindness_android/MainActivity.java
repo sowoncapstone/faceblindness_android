@@ -79,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Initialisation successful.");
             showPairedDevicesListDialog();
         }
+
+        TextView welcomeMessage = (TextView)findViewById(R.id.login_check);
     }
 
     @Override

@@ -3,12 +3,6 @@ package com.sowon.faceblindness_android;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
 
 public class LoadingActivity extends Activity {
 
@@ -18,7 +12,7 @@ public class LoadingActivity extends Activity {
 
         try {
             Thread.sleep(2000);
-            Intent intent = new Intent(this, JoinActivity.class);
+            Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
             finish();
         } catch (InterruptedException e) {

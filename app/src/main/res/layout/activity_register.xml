@@ -18,12 +18,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="ID : "/>
+
             <EditText
-                android:layout_width="wrap_content"
+                android:id="@+id/register_id"
+                android:layout_width="188dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/join_id"
                 android:width="150dp"
-                />
+                android:hint="아이디를 입력하세요" />
         </LinearLayout>
 
         <LinearLayout
@@ -34,29 +35,59 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="PW : "/>
+
             <EditText
-                android:layout_width="wrap_content"
+                android:id="@+id/register_password"
+                android:layout_width="208dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/join_password"
                 android:width="150dp"
-                />
+                android:hint="비밀번호를 입력하세요" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-            <Button
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="JOIN"
-                android:onClick="joinButton"/>
+                android:text="Age : "/>
+
+            <EditText
+                android:id="@+id/register_age"
+                android:layout_width="188dp"
+                android:layout_height="wrap_content"
+                android:width="150dp"
+                android:hint="나이를 입력하세요" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Name : "/>
+
+            <EditText
+                android:id="@+id/register_name"
+                android:layout_width="188dp"
+                android:layout_height="wrap_content"
+                android:width="150dp"
+                android:hint="이름을 입력하세요" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="LOGIN"
-                android:onClick="loginButton"/>
+                android:id="@+id/register_button"
+                android:text="회원가입" />
 
         </LinearLayout>
 
