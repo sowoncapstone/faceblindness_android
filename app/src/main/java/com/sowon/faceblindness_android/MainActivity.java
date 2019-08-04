@@ -4,8 +4,11 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
@@ -36,6 +39,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 
+import static com.sowon.faceblindness_android.LoginActivity.MyPREF;
+
 public class MainActivity extends AppCompatActivity {
 
     private final int REQUEST_BLUETOOTH_ENABLE = 100;
@@ -54,6 +59,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        TextView textView = (TextView)findViewById(R.id.login_check);
+
+        SharedPreferences log_info = this.getSharedPreferences(MyPREF, Context.MODE_PRIVATE);
+
+        textView.setText("Welcome, " + log_info.getString("id", null));
 
         OptionActivity checklistActivity = new OptionActivity();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();

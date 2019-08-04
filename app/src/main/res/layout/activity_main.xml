@@ -10,7 +10,7 @@
         android:id="@+id/login_check"
         android:layout_width="394dp"
         android:layout_height="37dp"
-        android:text="TextView"
+        android:text="user is not logged in"
         android:layout_above="@id/fragment_container"/>
 
     <FrameLayout

@@ -11,9 +11,21 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -26,6 +38,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -34,6 +47,7 @@ import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity {
     String sId, sPw;
+    RequestQueue queue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,70 +60,91 @@ public class RegisterActivity extends AppCompatActivity {
         final EditText et_age = (EditText) findViewById(R.id.register_age);
 
         Button registerB = (Button) findViewById(R.id.register_button);
+        queue = Volley.newRequestQueue(this);
+
 
         registerB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String userID = et_id.getText().toString();
-                String userPW = et_pw.getText().toString();
-                String userNmae = et_name.getText().toString();
-                int userAge = Integer.parseInt(et_age.getText().toString());
+                String url = "http://13.59.47.23:3000/register";
 
-                Response.Listener<String> responseListener = new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        JSONObject jsonRespons = null;
-                        try {
-                            jsonRespons = new JSONObject(response);
-                            boolean success = jsonRespons.getBoolean("Success");
+                final String userID = et_id.getText().toString();
+                final String userPW = et_pw.getText().toString();
+                //String userNmae = et_name.getText().toString();
+                //int userAge = Integer.parseInt(et_age.getText().toString());
 
-                            if(success){
-                                AlertDialog.Builder builder = new AlertDialog.Builder(RegisterActivity.this);
-                                builder.setMessage("회원등록 성공!")
-                                        .setPositiveButton("확인", null)
-                                        .create()
-                                        .show();
-                                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                                startActivity(intent);
-                            } else{
-                                AlertDialog.Builder builder = new AlertDialog.Builder(RegisterActivity.this);
-                                builder.setMessage("회원등록 실패!")
-                                        .setNegativeButton("확인", null)
-                                        .create()
-                                        .show();
-
+                StringRequest postRequest = new StringRequest(Request.Method.POST, url,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                Log.d("Response", response);
                             }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                // error
+                                Log.d("Error.Response", error.toString());
+                            }
                         }
+                ) {
+                    @Override
+                    protected Map<String, String> getParams() {
+                        Map<String, String> params = new HashMap<String, String>();
+                        params.put("id", userID);
+                        params.put("pw", userPW);
 
+                        return params;
+                    }
+
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/x-www-form-urlencoded; charset=UTF-8";
+                    }
+
+                    @Override
+                    protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                        if (response.statusCode == 200) {
+                            //Toast.makeText(RegisterActivity.this,"회원가입 성공!", Toast.LENGTH_LONG).show();
+                            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                        } else {
+                            //Toast.makeText(RegisterActivity.this, "회원가입 실패. 다시 시도해주세요", Toast.LENGTH_LONG).show();
+                        }
+                        return super.parseNetworkResponse(response);
                     }
                 };
 
-                RegisterRequest registerRequest = new RegisterRequest(userID, userPW, userNmae, userAge, responseListener);
-                RequestQueue queue = Volley.newRequestQueue(RegisterActivity.this);
-                queue.add(registerRequest);
-
-
+                postRequest.setRetryPolicy(new DefaultRetryPolicy(30000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+                queue.add(postRequest);
             }
         });
     }
 
+
     public class RegisterRequest extends StringRequest {
-        final static private String URL = "http://OURURL/register";
+        final static private String URL = "http://3.14.135.212:3000/register";
         private Map<String, String> params;
 
         public RegisterRequest(String userID, String userPW, String username, int userage, Response.Listener<String> listener) {
             super(Method.POST, URL, listener, null);
 
             params = new HashMap<>();
+
             params.put("id", userID);
-            params.put("pw", userPW);
+            params.put("password", userPW);
         }
 
         @Override
         public Map<String, String> getParams() {
             return params;
+        }
+
+        @Override
+        public Map<String, String> getHeaders() throws AuthFailureError {
+            HashMap<String, String> headers = new HashMap<String, String>();
+            headers.put("Content-Type", "application/json; charset=utf-8");
+            return headers;
         }
     }
 
@@ -125,7 +160,7 @@ public class RegisterActivity extends AppCompatActivity {
             try {
                 /* 서버연결 */
                 URL url = new URL(
-                        "http://서버주소/register");
+                        "http://13.59.109.120:3000/register");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                 conn.setRequestMethod("POST");
