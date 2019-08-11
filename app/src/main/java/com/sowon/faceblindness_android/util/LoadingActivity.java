@@ -1,8 +1,10 @@
-package com.sowon.faceblindness_android;
+package com.sowon.faceblindness_android.util;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+
+/* 앱 시작 로딩화면 */
 
 public class LoadingActivity extends Activity {
 
@@ -18,13 +20,10 @@ public class LoadingActivity extends Activity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
     public void onBackPressed() {
         //초반 플래시 화면에서 넘어갈때 뒤로가기 버튼 못누르게 함
     }
-
-
 }

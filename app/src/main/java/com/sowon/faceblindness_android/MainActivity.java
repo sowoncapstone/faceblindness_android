@@ -20,6 +20,12 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.sowon.faceblindness_android.tab_fragment.CategoryActivity;
+import com.sowon.faceblindness_android.tab_fragment.OptionActivity;
+import com.sowon.faceblindness_android.tab_fragment.SearchActivity;
+import com.sowon.faceblindness_android.tab_fragment.TimeActivity;
+import com.sowon.faceblindness_android.tab_fragment.TimelineActivity;
+import com.sowon.faceblindness_android.util.EncodedImage;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -39,7 +45,16 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 
-import static com.sowon.faceblindness_android.LoginActivity.MyPREF;
+import static com.sowon.faceblindness_android.util.LoginActivity.MyPREF;
+
+/* 메인
+ *
+ * 기능
+ * - 블루투스: 연결, 사진 수신
+ * - 웹 통신: 사진 전송, 결과 수신
+ * - 알림: 수신 결과 알림
+ *
+ * */
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     private String wholeImage = "";
     private Retrofit mRetrofit;
     private RetrofitAPI mRetrofitAPI;
+    private SharedPreferences log_info;
 
     private static final String TAG = "BluetoothClient";
 
@@ -59,9 +75,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        TextView textView = (TextView)findViewById(R.id.login_check);
+        TextView textView = (TextView) findViewById(R.id.login_check);
 
-        SharedPreferences log_info = this.getSharedPreferences(MyPREF, Context.MODE_PRIVATE);
+        log_info = this.getSharedPreferences(MyPREF, Context.MODE_PRIVATE);
 
         textView.setText("Welcome, " + log_info.getString("id", null));
 
@@ -83,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
             showPairedDevicesListDialog();
         }
 
-        TextView welcomeMessage = (TextView)findViewById(R.id.login_check);
+        TextView welcomeMessage = (TextView) findViewById(R.id.login_check);
     }
 
     @Override
@@ -94,13 +110,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public interface RetrofitAPI{
+    public interface RetrofitAPI {
         @POST("post")
-        Call<String>postComment(@Body EncodedImage encodedImage);
+        Call<String> postComment(@Body EncodedImage encodedImage);
     }
 
-
-    //프래그먼트에 전달하는 인터페이스를 위한 메소드
+    //프래그먼트에 값 전달하기. SearchActivity 참조.
     public String passvalue() {
         Log.d(TAG, "*********************PASS to the FRAGMENT************************");
         String sendString = wholeImage;
@@ -121,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
             UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
             try {
                 mBluetoothSocket = mBluetoothDevice.createRfcommSocketToServiceRecord(uuid);
-                Log.d(TAG, "create socket for " + mConnectedDeviceName);
+                Log.d(TAG, "  create socket for " + mConnectedDeviceName);
 
             } catch (IOException e) {
                 Log.e(TAG, "socket create failed " + e.getMessage());
@@ -157,8 +172,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    //연결된 이후 메세지 받기
+    //블루투스 연결 이후 사진 수신 + 전송
     private class ConnectedTask extends AsyncTask<Void, String, Boolean> {
 
         private InputStream mInputStream = null;
@@ -201,13 +215,13 @@ public class MainActivity extends AppCompatActivity {
                                 .create();
 
                         mRetrofit = new Retrofit.Builder()
-                                .baseUrl("http://13.58.98.170:3000")
+                                .baseUrl("http://" + getString(R.string.ip_address) + ":3000")
                                 .client(client)
                                 .addConverterFactory(GsonConverterFactory.create(gson))
                                 .build();
                         mRetrofitAPI = mRetrofit.create(RetrofitAPI.class);
 
-                        EncodedImage ei = new EncodedImage(writeString);
+                        EncodedImage ei = new EncodedImage(writeString, log_info.getString("id", null));
                         Call<String> comment = mRetrofitAPI.postComment(ei);
                         comment.enqueue(new Callback<String>() {
                             @Override
@@ -225,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
                         writeString = "";
                     }
 
-                }catch (Exception e){
+                } catch (Exception e) {
                     Log.e("ERROR2", e.getMessage());
                 }
             }
@@ -265,7 +279,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     //페어링 된 디바이스 목록 표시하는 다이얼로그
     public void showPairedDevicesListDialog() {
         Set<BluetoothDevice> devices = mBluetoothAdapter.getBondedDevices();
@@ -295,7 +308,6 @@ public class MainActivity extends AppCompatActivity {
         builder.create().show();
     }
 
-
     //에러 표시 다이럴로그
     public void showErrorDialog(String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -314,7 +326,6 @@ public class MainActivity extends AppCompatActivity {
         builder.create().show();
     }
 
-
     //종료 표시 다이얼로그
     public void showQuitDialog(String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -329,7 +340,6 @@ public class MainActivity extends AppCompatActivity {
         });
         builder.create().show();
     }
-
 
     //블루투스 어댑터 요청 관련 onActivityResult
     @Override

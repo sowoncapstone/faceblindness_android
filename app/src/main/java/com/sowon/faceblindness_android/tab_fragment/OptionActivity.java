@@ -1,4 +1,4 @@
-package com.sowon.faceblindness_android;
+package com.sowon.faceblindness_android.tab_fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -7,11 +7,33 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+
+import com.sowon.faceblindness_android.R;
+import com.sowon.faceblindness_android.util.LoginActivity;
+
+/* 환경설정
+*
+* 기능:
+*
+* - 로그아웃
+*
+* */
 
 public class OptionActivity extends Fragment {
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         final View view = inflater.inflate(R.layout.activity_option, container, false);
+
+        final Button log_out = (Button)view.findViewById(R.id.logout_btn);
+        log_out.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                logout(view);
+            }
+        });
+
         return view;
     }
 
