@@ -9,14 +9,18 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -26,6 +30,7 @@ import com.sowon.faceblindness_android.tab_fragment.SearchActivity;
 import com.sowon.faceblindness_android.tab_fragment.TimeActivity;
 import com.sowon.faceblindness_android.tab_fragment.TimelineActivity;
 import com.sowon.faceblindness_android.util.EncodedImage;
+import com.sowon.faceblindness_android.util.SendNameActivity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -188,12 +193,20 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "connected to " + mConnectedDeviceName);
         }
 
+        /* ASYNCTASK 에서 UI 를 업데이트 할 수 있는 메소드
+         * 1. onPreExecute() : doInBackground() 전에 실행됨
+         * 2. onPostExecute(): doInBackground() 후에 실행됨.
+         * 3. onProgressUpdate() : doInBackground() 실행 중 publishProgress()가 불리면 실행됨.
+         *
+         * */
+
         @Override
         protected Boolean doInBackground(Void... params) {
             String writeString = "";
             while (true) {
                 if (isCancelled()) return false;
                 try {
+                    // 블루투스로 라즈베리파이에서 사진 수신
                     BufferedReader br = new BufferedReader(new InputStreamReader(mInputStream));
                     String bufString = br.readLine();
                     writeString += bufString;
@@ -214,8 +227,9 @@ public class MainActivity extends AppCompatActivity {
                                 .setLenient()
                                 .create();
 
+                        // 레트로핏으로 사진 서버로 전송
                         mRetrofit = new Retrofit.Builder()
-                                .baseUrl("http://" + getString(R.string.ip_address) + ":3000")
+                                .baseUrl("http://" + getString(R.string.ip_address) + ":3000/post")
                                 .client(client)
                                 .addConverterFactory(GsonConverterFactory.create(gson))
                                 .build();
@@ -228,6 +242,8 @@ public class MainActivity extends AppCompatActivity {
                             public void onResponse(Call<String> call, Response<String> response) {
                                 String result = response.body();
                                 Log.d(TAG, result);
+                                // 여기서 서버로부터 받은 데이터를 onProgressUpdate()로 넘겨줌.
+                                publishProgress(result);
                             }
 
                             @Override
@@ -248,7 +264,47 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onProgressUpdate(String... recvMessage) {
-            mConversationArrayAdapter.insert(mConnectedDeviceName + ": " + recvMessage[0], 0);
+            //mConversationArrayAdapter.insert(mConnectedDeviceName + ": " + recvMessage[0], 0);
+
+            final LayoutInflater inflater = MainActivity.this.getLayoutInflater();
+            View mView = inflater.inflate(R.layout.dialog_unkown, null);
+            final EditText input = (EditText) mView.findViewById(R.id.unknown_name);
+
+            if (recvMessage.equals("모르는사람")) {
+                final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create(); //Read Update
+                alertDialog.setTitle("Face Detection Result");
+                alertDialog.setView(mView);
+                alertDialog.setMessage("this person is unknown would you like to register?");
+
+                alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // TODO 이름을 전달하는 새 Http 통신을 위해서 Intent 생성
+                        String new_name = input.getText().toString();
+                        Intent nameIntent = new Intent(MainActivity.this, SendNameActivity.class);
+                        nameIntent.putExtra("new_name", new_name);
+                        startService(nameIntent);
+                    }
+                });
+                alertDialog.setButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+                alertDialog.show();
+            } else {
+                // doInBackground() 에서 받은 결과값을 UI로 띄워줌.
+                AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create(); //Read Update
+                alertDialog.setTitle("Face Detection Result");
+                alertDialog.setMessage("this person is" + recvMessage);
+
+                alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+                alertDialog.show();
+            }
+
         }
 
         @Override

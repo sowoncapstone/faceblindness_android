@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
@@ -25,6 +26,7 @@ import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity {
     RequestQueue queue;
+    boolean register_success;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,15 +84,21 @@ public class RegisterActivity extends AppCompatActivity {
                     @Override
                     protected Response<String> parseNetworkResponse(NetworkResponse response) {
                         if (response.statusCode == 200) {
-                            //Toast.makeText(RegisterActivity.this,"회원가입 성공!", Toast.LENGTH_LONG).show();
+                            register_success = true;
                             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                             startActivity(intent);
                         } else {
-                            //Toast.makeText(RegisterActivity.this, "회원가입 실패. 다시 시도해주세요", Toast.LENGTH_LONG).show();
+                            register_success = false;
                         }
                         return super.parseNetworkResponse(response);
                     }
                 };
+
+                if (register_success) {
+                    Toast.makeText(getApplicationContext(), "회원가입 성공! 로그인 해주세요", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "회원가입 실패. 다시 시도해주세요", Toast.LENGTH_LONG).show();
+                }
 
                 postRequest.setRetryPolicy(new DefaultRetryPolicy(30000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
                 queue.add(postRequest);

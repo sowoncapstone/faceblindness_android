@@ -2,6 +2,7 @@ package com.sowon.faceblindness_android.util;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
@@ -35,6 +37,8 @@ public class LoginActivity extends AppCompatActivity {
     RequestQueue queue;
     SharedPreferences sharedpreferences;
     public static final String MyPREF = "MyPref";
+    boolean success;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,14 +61,6 @@ public class LoginActivity extends AppCompatActivity {
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             startActivity(intent);
         }
-
-        final Handler mHandler = new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(Message message) {
-                // This is where you do your work in the UI thread.
-                // Your worker tells you in the message what to do.
-            }
-        };
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,40 +109,38 @@ public class LoginActivity extends AppCompatActivity {
                             editor.putString("id", userID);
                             editor.putString("password", userPW);
                             editor.commit();
+                            success = true;
+                            Toast.makeText(getApplicationContext(), "Login Success!", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(LoginActivity.this,
                                     MainActivity.class);
                             startActivity(intent);
-                            // TODO: 로그인 성공 알림 띄워주기. Fragment라서 뷰 업데이트 힘듦...
                         } else {
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            AlertDialog.Builder builder =
-                                                    new AlertDialog.Builder(LoginActivity.this);
-                                            builder.setMessage("로그인 실패!")
-                                                    .setNegativeButton("확인", null)
-                                                    .create()
-                                                    .show();
-                                        }
-                                    });
-                                }
-                            }).start();
-
+                            success = false;
                         }
                         return super.parseNetworkResponse(response);
                     }
                 };
+
+                if (!success) {
+                    //로그인 실패시 실패알림
+                    AlertDialog alertDialog = new AlertDialog.Builder(LoginActivity.this).create(); //Read Update
+                    alertDialog.setTitle("Login");
+                    alertDialog.setMessage("Sorry, please retry");
+
+                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // here you can add functions
+                        }
+                    });
+
+                    alertDialog.show();
+                }
 
                 postRequest.setRetryPolicy(new DefaultRetryPolicy(30000,
                         DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
 
                 queue.add(postRequest);
-
-
             }
         });
 
@@ -156,21 +150,6 @@ public class LoginActivity extends AppCompatActivity {
     public void joinButton(View view) {
         Intent registerIntent = new Intent(LoginActivity.this, RegisterActivity.class);
         startActivity(registerIntent);
-    }
-
-
-    public void updateView(int statusCode) {
-        if (statusCode == 200) {
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
-            builder.setMessage("로그인 성공!")
-                    .setPositiveButton("확인", null)
-                    .create()
-                    .show();
-
-        } else {
-
-        }
     }
 
 }
