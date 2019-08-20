@@ -1,3 +1,0 @@
-C:/Users/soyeo/Document/4-1/CapstoneDesign/faceblindness_android_project/faceblindness_andriod/app/.externalNativeBuild/cmake/release/x86_64/CMakeFiles/native-lib.dir
-C:/Users/soyeo/Document/4-1/CapstoneDesign/faceblindness_android_project/faceblindness_andriod/app/.externalNativeBuild/cmake/release/x86_64/CMakeFiles/edit_cache.dir
-C:/Users/soyeo/Document/4-1/CapstoneDesign/faceblindness_android_project/faceblindness_andriod/app/.externalNativeBuild/cmake/release/x86_64/CMakeFiles/rebuild_cache.dir
