@@ -1,0 +1,41 @@
+{
+  "stringTable": {
+    "0": "C:/Users/soyeo/Document/4-1/CapstoneDesign/faceblindness_android_project/faceblindness_andriod/app/.externalNativeBuild/cmake/debug/armeabi-v7a",
+    "1": "--target=armv7-none-linux-androideabi16 --gcc-toolchain=C:/Users/soyeo/AppData/Local/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/windows-x86_64 --sysroot=C:/Users/soyeo/AppData/Local/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/windows-x86_64/sysroot -Dnative_lib_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -mfpu=vfpv3-d16 -fno-addrsig -march=armv7-a -mthumb -Wa,--noexecstack -Wformat -Werror=format-security -stdlib=libc++ -O0 -fno-limit-debug-info -fPIC",
+    "2": "-g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -mfpu=vfpv3-d16 -fno-addrsig -march=armv7-a -mthumb -Wa,--noexecstack -Wformat -Werror=format-security -stdlib=libc++  -O0 -fno-limit-debug-info  -fPIC  "
+  },
+  "buildFiles": [
+    "C:\\Users\\soyeo\\AppData\\Local\\Android\\Sdk\\ndk-bundle\\build\\cmake\\platforms.cmake",
+    "C:\\Users\\soyeo\\AppData\\Local\\Android\\Sdk\\ndk-bundle\\build\\cmake\\android.toolchain.cmake",
+    "C:\\Users\\soyeo\\Document\\4-1\\CapstoneDesign\\faceblindness_android_project\\faceblindness_andriod\\app\\CMakeLists.txt"
+  ],
+  "cleanCommands": [
+    "C:\\Users\\soyeo\\AppData\\Local\\Android\\Sdk\\cmake\\3.10.2.4988404\\bin\\cmake.exe --build C:\\Users\\soyeo\\Document\\4-1\\CapstoneDesign\\faceblindness_android_project\\faceblindness_andriod\\app\\.externalNativeBuild\\cmake\\debug\\armeabi-v7a --target clean"
+  ],
+  "libraries": {
+    "native-lib-Debug-armeabi-v7a": {
+      "buildCommand": "C:\\Users\\soyeo\\AppData\\Local\\Android\\Sdk\\cmake\\3.10.2.4988404\\bin\\cmake.exe --build C:\\Users\\soyeo\\Document\\4-1\\CapstoneDesign\\faceblindness_android_project\\faceblindness_andriod\\app\\.externalNativeBuild\\cmake\\debug\\armeabi-v7a --target native-lib",
+      "buildType": "debug",
+      "toolchain": "347360352",
+      "abi": "armeabi-v7a",
+      "artifactName": "native-lib",
+      "files": [
+        {
+          "src": "C:\\Users\\soyeo\\Document\\4-1\\CapstoneDesign\\faceblindness_android_project\\faceblindness_andriod\\app\\src\\main\\cpp\\native-lib.cpp",
+          "flagsOrdinal": 2,
+          "workingDirectoryOrdinal": 0
+        }
+      ],
+      "output": "C:\\Users\\soyeo\\Document\\4-1\\CapstoneDesign\\faceblindness_android_project\\faceblindness_andriod\\app\\build\\intermediates\\cmake\\debug\\obj\\armeabi-v7a\\libnative-lib.so"
+    }
+  },
+  "toolchains": {
+    "347360352": {
+      "cppCompilerExecutable": "C:\\Users\\soyeo\\AppData\\Local\\Android\\Sdk\\ndk-bundle\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang++.exe"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

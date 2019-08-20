@@ -1,0 +1,18 @@
+{
+  "buildFiles": [
+    "C:\\Users\\soyeo\\AppData\\Local\\Android\\Sdk\\ndk-bundle\\build\\cmake\\platforms.cmake",
+    "C:\\Users\\soyeo\\AppData\\Local\\Android\\Sdk\\ndk-bundle\\build\\cmake\\android.toolchain.cmake",
+    "C:\\Users\\soyeo\\Document\\4-1\\CapstoneDesign\\faceblindness_android_project\\faceblindness_andriod\\app\\CMakeLists.txt"
+  ],
+  "cleanCommands": [
+    "C:\\Users\\soyeo\\AppData\\Local\\Android\\Sdk\\cmake\\3.10.2.4988404\\bin\\cmake.exe --build C:\\Users\\soyeo\\Document\\4-1\\CapstoneDesign\\faceblindness_android_project\\faceblindness_andriod\\app\\.externalNativeBuild\\cmake\\release\\arm64-v8a --target clean"
+  ],
+  "libraries": {
+    "native-lib-Release-arm64-v8a": {
+      "artifactName": "native-lib",
+      "buildCommand": "C:\\Users\\soyeo\\AppData\\Local\\Android\\Sdk\\cmake\\3.10.2.4988404\\bin\\cmake.exe --build C:\\Users\\soyeo\\Document\\4-1\\CapstoneDesign\\faceblindness_android_project\\faceblindness_andriod\\app\\.externalNativeBuild\\cmake\\release\\arm64-v8a --target native-lib",
+      "abi": "arm64-v8a",
+      "output": "C:\\Users\\soyeo\\Document\\4-1\\CapstoneDesign\\faceblindness_android_project\\faceblindness_andriod\\app\\build\\intermediates\\cmake\\release\\obj\\arm64-v8a\\libnative-lib.so"
+    }
+  }
+}

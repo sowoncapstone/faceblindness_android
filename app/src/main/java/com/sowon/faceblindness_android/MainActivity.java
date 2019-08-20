@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
@@ -22,6 +21,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sowon.faceblindness_android.tab_fragment.CategoryActivity;
@@ -30,12 +36,13 @@ import com.sowon.faceblindness_android.tab_fragment.SearchActivity;
 import com.sowon.faceblindness_android.tab_fragment.TimeActivity;
 import com.sowon.faceblindness_android.tab_fragment.TimelineActivity;
 import com.sowon.faceblindness_android.util.EncodedImage;
-import com.sowon.faceblindness_android.util.SendNameActivity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -278,9 +285,9 @@ public class MainActivity extends AppCompatActivity {
 
                 alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // TODO 이름을 전달하는 새 Http 통신을 위해서 Intent 생성
+                        // 이름을 전달하는 새 Http 통신을 위해서 Intent 생성
                         String new_name = input.getText().toString();
-                        Intent nameIntent = new Intent(MainActivity.this, SendNameActivity.class);
+                        Intent nameIntent = new Intent(MainActivity.this, RegisterName.class);
                         nameIntent.putExtra("new_name", new_name);
                         startService(nameIntent);
                     }
@@ -334,6 +341,66 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    //얼굴 인식 결과가 모르는 사람일 경우 이름 등록
+    private class RegisterName extends AsyncTask<Void, String, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+
+            RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
+            final String userID = getIntent().getStringExtra("new_name");
+
+            String url = "http://" + getString(R.string.ip_address) + ":3000/newname";
+
+            StringRequest postRequest = new StringRequest(Request.Method.POST, url,
+                    new com.android.volley.Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            Log.d("Response", response);
+                            onProgressUpdate();
+                        }
+                    },
+                    new com.android.volley.Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            // error
+                            Log.d("Error.Response", error.toString());
+                        }
+                    }
+            ) {
+                @Override
+                protected Map<String, String> getParams() {
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put("name", userID);
+
+                    return params;
+                }
+
+                @Override
+                public String getBodyContentType() {
+                    return "application/x-www-form-urlencoded; charset=UTF-8";
+                }
+
+                @Override
+                protected com.android.volley.Response<String> parseNetworkResponse(NetworkResponse response) {
+                    return super.parseNetworkResponse(response);
+                }
+            };
+
+            postRequest.setRetryPolicy(new DefaultRetryPolicy(30000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+            queue.add(postRequest);
+            return true;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... recvMessage) {
+            // 이름이 성공적으로 등록되었다는 알림 보내기.
+            Toast.makeText(getApplicationContext(),"이름이 등록되었습니다.", Toast.LENGTH_SHORT);
+        }
+
+    }
+
 
     //페어링 된 디바이스 목록 표시하는 다이얼로그
     public void showPairedDevicesListDialog() {
