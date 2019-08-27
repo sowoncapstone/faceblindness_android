@@ -93,9 +93,9 @@ public class MainActivity extends AppCompatActivity {
 
         textView.setText("Welcome, " + log_info.getString("id", null));
 
-        OptionActivity checklistActivity = new OptionActivity();
+        OptionActivity optionActivity = new OptionActivity();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(R.id.fragment_container, checklistActivity).commit();
+        transaction.add(R.id.fragment_container, optionActivity).commit();
 
         mConversationArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
 
@@ -110,8 +110,6 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Initialisation successful.");
             showPairedDevicesListDialog();
         }
-
-        TextView welcomeMessage = (TextView) findViewById(R.id.login_check);
     }
 
     @Override
@@ -210,14 +208,29 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
             String writeString = "";
+            String beforeString = "";
             while (true) {
                 if (isCancelled()) return false;
                 try {
                     // 블루투스로 라즈베리파이에서 사진 수신
                     BufferedReader br = new BufferedReader(new InputStreamReader(mInputStream));
                     String bufString = br.readLine();
+
+                    //만약 아직 아무것도 안왔다 그럼 멈춤
+                    if(bufString == null){
+                        Thread.sleep(2000);
+                        continue;
+                    }
                     writeString += bufString;
 
+                    //만약 전에 보낸 것과 같은 사진이면 멈춤
+                    if(writeString == bufString){
+                        Thread.sleep(2000);
+                        writeString = "";
+                        continue;
+                    }
+
+                    //만약 제대로 왔다 그럼 보내
                     if (bufString.contains("ENDOFFILE")) {
                         Log.d("Sending Image", writeString);
 
@@ -248,20 +261,17 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onResponse(Call<String> call, Response<String> response) {
                                 String result = response.body();
-                                Log.d(TAG, result);
                                 // 여기서 서버로부터 받은 데이터를 onProgressUpdate()로 넘겨줌.
                                 publishProgress(result);
                             }
-
                             @Override
                             public void onFailure(Call<String> call, Throwable t) {
                                 t.printStackTrace();
                             }
                         });
-
+                        beforeString = writeString;
                         writeString = "";
                     }
-
                 } catch (Exception e) {
                     Log.e("ERROR2", e.getMessage());
                 }
@@ -344,7 +354,6 @@ public class MainActivity extends AppCompatActivity {
 
     //얼굴 인식 결과가 모르는 사람일 경우 이름 등록
     private class RegisterName extends AsyncTask<Void, String, Boolean> {
-
         @Override
         protected Boolean doInBackground(Void... params) {
 
@@ -368,7 +377,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.d("Error.Response", error.toString());
                         }
                     }
-            ) {
+            ){
                 @Override
                 protected Map<String, String> getParams() {
                     Map<String, String> params = new HashMap<String, String>();
@@ -376,29 +385,24 @@ public class MainActivity extends AppCompatActivity {
 
                     return params;
                 }
-
                 @Override
                 public String getBodyContentType() {
                     return "application/x-www-form-urlencoded; charset=UTF-8";
                 }
-
                 @Override
                 protected com.android.volley.Response<String> parseNetworkResponse(NetworkResponse response) {
                     return super.parseNetworkResponse(response);
                 }
             };
-
             postRequest.setRetryPolicy(new DefaultRetryPolicy(30000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
             queue.add(postRequest);
             return true;
         }
-
         @Override
         protected void onProgressUpdate(String... recvMessage) {
             // 이름이 성공적으로 등록되었다는 알림 보내기.
             Toast.makeText(getApplicationContext(),"이름이 등록되었습니다.", Toast.LENGTH_SHORT);
         }
-
     }
 
 
@@ -423,7 +427,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
-
                 ConnectTask task = new ConnectTask(pairedDevices[which]);
                 task.execute();
             }
@@ -485,28 +488,10 @@ public class MainActivity extends AppCompatActivity {
         transaction.replace(R.id.fragment_container, optionActivity).commit();
     }
 
-    public void onClick_category(View view) {
-        CategoryActivity categoryActivity = new CategoryActivity();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, categoryActivity).commit();
-    }
-
-    public void onClick_time(View view) {
-        TimeActivity timeActivity = new TimeActivity();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, timeActivity).commit();
-    }
-
     public void onClick_timeline(View view) {
         TimelineActivity timelineActivity = new TimelineActivity();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, timelineActivity).commit();
-    }
-
-    public void onClick_search(View view) {
-        SearchActivity searchActivity = new SearchActivity();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, searchActivity).commit();
     }
 
 }
