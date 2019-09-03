@@ -76,6 +76,16 @@ public class LoginActivity extends AppCompatActivity {
                             public void onResponse(String response) {
                                 // response
                                 Log.d("Response", response);
+                                if (response.contains(userID)) {
+                                    SharedPreferences.Editor editor = sharedpreferences.edit();
+                                    editor.putString("id", userID);
+                                    editor.putString("password", userPW);
+                                    editor.commit();
+                                    success = true;
+                                } else {
+                                    success = false;
+                                }
+
                             }
                         },
                         new Response.ErrorListener() {
@@ -100,50 +110,43 @@ public class LoginActivity extends AppCompatActivity {
                         return "application/x-www-form-urlencoded; charset=UTF-8";
                     }
 
-                    @Override
-                    protected Response<String> parseNetworkResponse(NetworkResponse response) {
-                        //updateView(response.statusCode);
-                        final String responseStr = response.toString();
-                        if (response.statusCode == 200) {
-                            SharedPreferences.Editor editor = sharedpreferences.edit();
-                            editor.putString("id", userID);
-                            editor.putString("password", userPW);
-                            editor.commit();
-                            success = true;
-                            Toast.makeText(getApplicationContext(), "Login Success!", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(LoginActivity.this,
-                                    MainActivity.class);
-                            startActivity(intent);
-                        } else {
-                            success = false;
-                        }
-                        return super.parseNetworkResponse(response);
-                    }
                 };
-
-                if (!success) {
-                    //로그인 실패시 실패알림
-                    AlertDialog alertDialog = new AlertDialog.Builder(LoginActivity.this).create(); //Read Update
-                    alertDialog.setTitle("Login");
-                    alertDialog.setMessage("Sorry, please retry");
-
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // here you can add functions
-                        }
-                    });
-
-                    alertDialog.show();
-                }
 
                 postRequest.setRetryPolicy(new DefaultRetryPolicy(30000,
                         DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
 
                 queue.add(postRequest);
+
+
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        // Actions to do after 10 seconds
+                        if (success) {
+                            Intent intent = new Intent(LoginActivity.this,
+                                    MainActivity.class);
+                            startActivity(intent);
+                        } else {
+                            AlertDialog alertDialog = new AlertDialog.Builder(LoginActivity.this).create(); //Read Update
+                            alertDialog.setTitle("Login");
+                            alertDialog.setMessage("Sorry, please retry");
+
+                            alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // here you can add functions
+                                }
+                            });
+
+                            alertDialog.show();
+                        }
+
+                    }
+                }, 1500);
+
+
             }
         });
-
 
     }
 

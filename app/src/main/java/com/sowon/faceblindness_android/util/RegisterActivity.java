@@ -1,6 +1,7 @@
 package com.sowon.faceblindness_android.util;
 
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,7 +11,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -57,6 +57,14 @@ public class RegisterActivity extends AppCompatActivity {
                             @Override
                             public void onResponse(String response) {
                                 Log.d("Response", response);
+
+                                if (response.contains("\"affectedRows\":1")) {
+                                    register_success = true;
+                                    Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                                    startActivity(intent);
+                                } else {
+                                    register_success = false;
+                                }
                             }
                         },
                         new Response.ErrorListener() {
@@ -81,27 +89,24 @@ public class RegisterActivity extends AppCompatActivity {
                         return "application/x-www-form-urlencoded; charset=UTF-8";
                     }
 
-                    @Override
-                    protected Response<String> parseNetworkResponse(NetworkResponse response) {
-                        if (response.statusCode == 200) {
-                            register_success = true;
-                            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                            startActivity(intent);
-                        } else {
-                            register_success = false;
-                        }
-                        return super.parseNetworkResponse(response);
-                    }
                 };
-
-                if (register_success) {
-                    Toast.makeText(getApplicationContext(), "회원가입 성공! 로그인 해주세요", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(getApplicationContext(), "회원가입 실패. 다시 시도해주세요", Toast.LENGTH_LONG).show();
-                }
 
                 postRequest.setRetryPolicy(new DefaultRetryPolicy(30000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
                 queue.add(postRequest);
+
+
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        // Actions to do after 10 seconds
+                        if (register_success) {
+                            Toast.makeText(getApplicationContext(), "회원가입 성공! 로그인 해주세요", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "회원가입 실패. 다시 시도해주세요", Toast.LENGTH_LONG).show();
+                        }
+
+                    }
+                }, 1500);
             }
         });
     }

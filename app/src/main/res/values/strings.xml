@@ -2,5 +2,6 @@
     <string name="app_name">faceblindness_android</string>
     <string name="title_activity_loading">LoadingActivity</string>
     <string name="title_activity_login">LoginActivity</string>
-    <string name="ip_address" tools:ignore="ExtraTranslation">3.15.198.34</string>
+
+    <string name="ip_address">18.191.234.142</string>
 </resources>
